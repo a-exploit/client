@@ -26,7 +26,7 @@ const Chat = ({ location }) => {
 
     setRoom(room);
     setName(name)
-
+    document.title=`Room : ${room}`
     socket.emit('join', { name, room }, (error) => {
       if(error) {
         alert(error);
