@@ -13,11 +13,13 @@ let socket;
 
 const Chat = ({ location }) => {
   const [name, setName] = useState('');
+  const [typing, setTyping] = useState('');
   const [room, setRoom] = useState('');
   const [users, setUsers] = useState('');
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
-  const ENDPOINT = 'https://chat-app-ayush.herokuapp.com/';
+  // const ENDPOINT = 'https://chat-app-ayush.herokuapp.com/';
+  const ENDPOINT = 'localhost:5000';
 
   useEffect(() => {
     const { name, room } = queryString.parse(location.search);
@@ -42,28 +44,43 @@ const Chat = ({ location }) => {
     socket.on('roomData', ({ users }) => {
       setUsers(users);
     })
-
+    socket.on('typing',(text)=>{
+      setTyping(text.text)
+    })
+    socket.on('notTyping',(text)=>{
+      setTyping(text.text)
+    })
     return () => {
       socket.emit('disconnect');
 
       socket.off();
     }
   }, [messages])
+  const isTyping=(event)=>{
+    event.preventDefault();
+    socket.emit('isTyping',name,()=>{
 
+    })
+  }
+  const isNotTyping =(event)=>{
+    socket.emit('isNotTyping',name,()=>{
+
+    })
+  }
   const sendMessage = (event) => {
     event.preventDefault();
-
     if(message) {
       socket.emit('sendMessage', message, () => setMessage(''));
+      isNotTyping(event)
     }
   }
 
   return (
     <div className="outerContainer">
       <div className="container">
-          <InfoBar room={room} />
+          <InfoBar room={room} typing={typing}/>
           <Messages messages={messages} name={name} />
-          <Input message={message} setMessage={setMessage} sendMessage={sendMessage} />
+          <Input message={message} setMessage={setMessage} isNotTyping={isNotTyping} sendMessage={sendMessage} isTyping={isTyping} />
       </div>
       <TextContainer users={users}/>
     </div>
